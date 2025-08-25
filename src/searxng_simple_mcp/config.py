@@ -6,6 +6,7 @@ using Pydantic for validation and environment variable loading.
 """
 
 from typing import Literal
+
 from pydantic import AnyHttpUrl, Field
 from pydantic_settings import BaseSettings
 
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
         language: Language code for search results
         format: Default format for search results
         log_level: Logging level for the application
+
     """
 
     # SearxNG instance URL

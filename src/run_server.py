@@ -5,9 +5,9 @@ Wrapper script to run the SearxNG MCP server.
 This script can be run directly without import issues.
 """
 
-import sys
-import os
 import logging
+import os
+import sys
 
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

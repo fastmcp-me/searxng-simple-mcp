@@ -10,6 +10,7 @@ Example:
     To run the server directly:
 
     $ python -m src.run_server
+
 """
 
 # Standard library imports
@@ -35,7 +36,7 @@ settings = Settings()
 # Create FastMCP server
 mcp = FastMCP(
     "SearxNG Search",
-    description="Provides web search capabilities using SearxNG",
+    instructions="Provides web search capabilities using SearxNG",
     log_level=settings.log_level,
 )
 # Initialize SearxNG client
@@ -43,7 +44,6 @@ searxng_client = SearxNGClient(settings.searxng_url, settings.timeout)
 
 
 @mcp.tool()
-# ruff: noqa: PLR0913
 async def web_search(
     query: str = Field(description="The search query string to look for on the web"),
     result_count: int = Field(
@@ -68,7 +68,8 @@ async def web_search(
     ),
     ctx: Context = None,
 ) -> str | dict[str, Any]:
-    """Performs a web search using SearxNG and returns formatted results.
+    """
+    Performs a web search using SearxNG and returns formatted results.
 
     Results are returned in either text format (human-readable) or JSON format
     depending on the result_format parameter selected.
@@ -91,7 +92,11 @@ async def web_search(
             results["results"] = results["results"][:result_count]
 
         # Format the results based on result_format using ternary operator
-        result = results if result_format == "json" else searxng_client.format_results(results)
+        result = (
+            results
+            if result_format == "json"
+            else searxng_client.format_results(results)
+        )
 
         if ctx:
             ctx.info(f"Found {len(results.get('results', []))} results")

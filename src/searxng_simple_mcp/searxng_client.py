@@ -22,6 +22,7 @@ class SearxNGClient:
         Args:
             base_url: URL of the SearxNG instance to use
             timeout: HTTP request timeout in seconds
+
         """
         self.base_url = str(base_url).rstrip("/")
         self.timeout = timeout
@@ -33,7 +34,8 @@ class SearxNGClient:
         language: str | None = None,
         time_range: str | None = None,
     ) -> dict[str, Any]:
-        """Performs a web search using the SearxNG API.
+        """
+        Performs a web search using the SearxNG API.
 
         Returns search results in a dictionary format containing the results
         and metadata such as number of total results found.
@@ -46,6 +48,7 @@ class SearxNGClient:
 
         Returns:
             Dictionary containing search results and metadata
+
         """
         # Build search parameters
         params = {
@@ -95,6 +98,7 @@ class SearxNGClient:
 
         Returns:
             Formatted string of search results
+
         """
         results = data.get("results", [])
 
@@ -108,7 +112,9 @@ class SearxNGClient:
 
         # Add information about the number of results
         if "number_of_results" in data and data["number_of_results"] > 0:
-            search_info.append(f"Found approximately {data['number_of_results']} results")
+            search_info.append(
+                f"Found approximately {data['number_of_results']} results"
+            )
 
         # Format individual results
         formatted_results = []

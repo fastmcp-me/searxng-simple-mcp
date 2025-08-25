@@ -1,25 +1,19 @@
 [project]
 name = "searxng-simple-mcp"
-version = "1.0.3"
+version = "1.1.0"
 description = "SearxNG MCP Server"
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "fastmcp",
-    "httpx",
-    "mcp[cli]>=1.6.0",
-    "pydantic",
-    "pydantic-settings",
-]
+dependencies = [ "fastmcp", "httpx", "mcp[cli]>=1.6.0", "pydantic", "pydantic-settings",]
 [[project.authors]]
 name = "Dmitriy Safonov"
 
 [dependency-groups]
-dev = ["ruff", "build", "twine", "toml"]
+dev = [ "ruff", "build", "twine", "toml",]
 
 [build-system]
-requires = ["flit_core>=3.2,<4"]
+requires = [ "flit_core>=3.2,<4",]
 build-backend = "flit_core.buildapi"
 
 [project.scripts]
@@ -29,16 +23,20 @@ searxng-simple-mcp = "searxng_simple_mcp.server:mcp.run"
 target-version = "py312"
 line-length = 88
 fix = true
-exclude = ["__pycache__", ".venv", "build", "dist"]
+exclude = [ "__pycache__", ".venv", "build", "dist",]
 show-fixes = true
 
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+exclude = "(\\.venv|build|dist|__pycache__)"
+plugins = [ "pydantic.mypy",]
 
 [tool.ruff.lint]
-# Enable all default rules plus some extras
-select = ["E", "F", "I", "N", "UP", "B", "C4", "T20", "SIM", "RUF"]
-ignore = ["D203", "D212"]
-extend-select = ["ANN", "S", "D", "I"]
-
+select = [ "E", "F", "I", "N", "UP", "B", "C4", "T20", "SIM", "RUF",]
+ignore = [ "D203", "D212",]
+extend-select = [ "ANN", "S", "D", "I",]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -46,11 +44,3 @@ preview = true
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
-
-
-[tool.mypy]
-python_version = "3.12"
-strict = true
-ignore_missing_imports = true
-exclude = "(\\.venv|build|dist|__pycache__)"
-plugins = ["pydantic.mypy"]

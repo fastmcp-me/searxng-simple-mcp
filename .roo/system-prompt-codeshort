@@ -70,9 +70,6 @@ Parameters: result (required), command (optional)
 IMPORTANT REPLACE tool_name with the tool you want to use, for example read_file.
 IMPORTANT REPLACE parameter_name with the parameter name, for example path.
 Format tool use with XML tags, e.g.:
-text
-Wrap
-Copy
 <tool_name>
 <parameter1_name>value1</parameter1_name>
 <parameter2_name>value2</parameter2_name>
