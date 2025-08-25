@@ -7,20 +7,20 @@ WORKDIR /app
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
 
-# Copy from the cache instead of linking since it's a mounted volume
+# Fix for Windows Docker Desktop symlink issues
 ENV UV_LINK_MODE=copy
+ENV UV_PYTHON_PIP_COMPATIBLE=1
 
 # Install the project's dependencies using the lockfile and settings
-RUN --mount=type=cache,target=.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
+    uv sync --locked --no-install-project --no-dev
 
 # Then, add the rest of the project source code and install it
 # Installing separately from its dependencies allows optimal layer caching
 ADD . /app
-RUN --mount=type=cache,target=.cache/uv \
-    uv sync --frozen --no-dev
+
+RUN uv sync --locked --no-dev
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
