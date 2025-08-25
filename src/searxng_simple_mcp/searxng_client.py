@@ -1,15 +1,40 @@
-"""
-Client for interacting with SearxNG search API.
-"""
+"""Client for interacting with SearxNG search API."""
 
 import logging
 from typing import Any
 
 import httpx
-from pydantic import AnyHttpUrl
+from pydantic import AnyHttpUrl, BaseModel, Field
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+class SearxngResult(BaseModel):
+    """Model for a single SearxNG search result."""
+
+    url: str = Field(..., alias="url")
+    title: str = Field(..., alias="title")
+    content: str = Field(..., alias="content")
+    thumbnail: Any = Field(None, alias="thumbnail")
+    engine: str = Field(..., alias="engine")
+    template: str = Field(..., alias="template")
+    parsed_url: list[str] = Field(..., alias="parsed_url")
+    img_src: str = Field(..., alias="img_src")
+    priority: str = Field(..., alias="priority")
+    engines: list[str] = Field(..., alias="engines")
+    positions: list[int] = Field(..., alias="positions")
+    score: float = Field(..., alias="score")
+    category: str = Field(..., alias="category")
+    published_date: Any = Field(None, alias="publishedDate")
+
+
+class SearxngResponse(BaseModel):
+    """Model for SearxNG API response."""
+
+    query: str
+    number_of_results: int
+    results: list[SearxngResult]
 
 
 class SearxNGClient:
@@ -33,9 +58,9 @@ class SearxNGClient:
         categories: list[str] | None = None,
         language: str | None = None,
         time_range: str | None = None,
-    ) -> dict[str, Any]:
+    ) -> SearxngResponse:
         """
-        Performs a web search using the SearxNG API.
+        Perform a web search using the SearxNG API.
 
         Returns search results in a dictionary format containing the results
         and metadata such as number of total results found.
@@ -82,7 +107,8 @@ class SearxNGClient:
                 logger.info(f"Response: {response.text[:100]}...")
 
                 # Parse the JSON response
-                return response.json()
+                json_response = response.json()
+                return SearxngResponse(**json_response)
 
         except Exception as e:
             logger.exception("Unexpected error occurred")

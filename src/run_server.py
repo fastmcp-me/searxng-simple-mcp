@@ -13,7 +13,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import the server
-from searxng_simple_mcp.server import mcp, settings
+from searxng_simple_mcp.server import mcp
 
 # Configure logging
 logging.basicConfig(
@@ -24,5 +24,4 @@ logging.basicConfig(
 
 # Main entrypoint
 if __name__ == "__main__":
-    print(f"Starting SearxNG MCP server with instance: {settings.searxng_url}")
     mcp.run()

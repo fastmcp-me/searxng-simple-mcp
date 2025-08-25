@@ -1,6 +1,6 @@
 [project]
 name = "searxng-simple-mcp"
-version = "1.1.1"
+version = "1.2.0"
 description = "SearxNG MCP Server"
 license = "MIT"
 readme = "README.md"

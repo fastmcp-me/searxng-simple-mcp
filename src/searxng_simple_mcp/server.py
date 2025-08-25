@@ -23,9 +23,29 @@ from pydantic import Field
 
 # Local imports
 from searxng_simple_mcp.config import Settings
-from searxng_simple_mcp.searxng_client import SearxNGClient
+from searxng_simple_mcp.searxng_client import SearxNGClient, SearxngResult
 
 # Constants
+# Module-level Field constants to avoid calling Field() in function signatures
+_QUERY_FIELD = Field(description="The search query string to look for on the web")
+_RESULT_COUNT_FIELD = Field(
+    default=Settings().default_result_count,
+    description="Maximum number of results to return",
+    gt=0,
+)
+_CATEGORIES_FIELD = Field(
+    default=None,
+    description="Categories to filter by (e.g., 'general', 'images', 'news', 'videos')",
+)
+_LANGUAGE_FIELD = Field(
+    default=Settings().default_language,
+    description="Language code for results (e.g., 'all', 'en', 'ru', 'fr')",
+)
+_TIME_RANGE_FIELD = Field(default=None, description="Time restriction for results")
+_RESULT_FORMAT_FIELD = Field(
+    default=Settings().default_format,
+    description="Output format - 'text' for human-readable, 'json' for structured data",
+)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -39,88 +59,69 @@ mcp = FastMCP(
     instructions="Provides web search capabilities using SearxNG",
     log_level=settings.log_level,
 )
+
 # Initialize SearxNG client
 searxng_client = SearxNGClient(settings.searxng_url, settings.timeout)
 
 
 @mcp.tool()
 async def web_search(
-    query: str = Field(description="The search query string to look for on the web"),
-    result_count: int = Field(
-        default=settings.default_result_count,
-        description="Maximum number of results to return",
-        gt=0,
-    ),
-    categories: list[str] | None = Field(
-        default=None,
-        description="Categories to filter by (e.g., 'general', 'images', 'news', 'videos')",
-    ),
-    language: str | None = Field(
-        default=settings.default_language,
-        description="Language code for results (e.g., 'all', 'en', 'ru', 'fr')",
-    ),
-    time_range: Literal["day", "week", "month", "year"] | None = Field(
-        default=None, description="Time restriction for results"
-    ),
-    result_format: Literal["text", "json"] = Field(
-        default=settings.default_format,
-        description="Output format - 'text' for human-readable or 'json' for structured data",
-    ),
-    ctx: Context = None,
-) -> str | dict[str, Any]:
+    query: str = _QUERY_FIELD,
+    result_count: int = _RESULT_COUNT_FIELD,
+    categories: list[str] | None = _CATEGORIES_FIELD,
+    language: str | None = _LANGUAGE_FIELD,
+    time_range: Literal["day", "week", "month", "year"] | None = _TIME_RANGE_FIELD,
+    result_format: Literal["text", "json"] = _RESULT_FORMAT_FIELD,
+    ctx: Context | None = None,
+) -> str | list[SearxngResult]:
     """
-    Performs a web search using SearxNG and returns formatted results.
+    Perform a web search using SearxNG and return formatted results.
 
     Results are returned in either text format (human-readable) or JSON format
     depending on the result_format parameter selected.
+
     """
     try:
         # Inform about the search operation
         if ctx:
-            ctx.info(f"Searching for: {query}")
+            await ctx.info("Starting web search...")
 
-        # Perform the search
-        results = await searxng_client.search(
-            query,
+        # Validate inputs
+        if result_count <= 0:
+            raise ValueError("result_count must be greater than 0")
+
+        # Perform the search using SearxNG
+        response = await searxng_client.search(
+            query=query,
             categories=categories,
             language=language,
             time_range=time_range,
         )
 
-        # Limit the results based on the requested count
-        if "results" in results and len(results["results"]) > result_count:
-            results["results"] = results["results"][:result_count]
+        results = response.results[:result_count]
 
-        # Format the results based on result_format using ternary operator
-        result = (
-            results
-            if result_format == "json"
-            else searxng_client.format_results(results)
-        )
+        # Format results according to requested format
+        if result_format == "json":
+            # Return JSON-formatted results
+            return results
+        else:
+            # Return human-readable text
+            formatted_results = []
+            for i, result in enumerate(results, 1):
+                title = result.title
+                url = result.url
+                content = result.content[:200] + "..."
+                formatted_results.append(f"{i}. [{title}]({url})\n   {content}")
 
-        if ctx:
-            ctx.info(f"Found {len(results.get('results', []))} results")
+            return "\n\n".join(formatted_results)
+
     except Exception as e:
-        error_msg = f"Unexpected error during search: {e}"
-        logger.exception(error_msg)
+        logger.error(f"Error during web search: {e}")
         if ctx:
-            ctx.error(error_msg)
-        return error_msg
-    else:
-        return result
+            await ctx.info(f"Error during search: {e}")
+        raise
 
 
-# Define a resource for server information
-@mcp.resource("server://info")
-def get_server_info() -> str:
-    """Get information about the SearxNG server configuration."""
-    return f"""
-SearxNG MCP Server Information:
-------------------------------
-SearxNG Instance: {settings.searxng_url}
-Timeout: {settings.timeout} seconds
-Default Result Count: {settings.default_result_count}
-Default Language: {settings.default_language}
-Default Format: {settings.default_format}
-Log Level: {settings.log_level}
-    """
+if __name__ == "__main__":
+    # Run the FastMCP server
+    mcp.run()

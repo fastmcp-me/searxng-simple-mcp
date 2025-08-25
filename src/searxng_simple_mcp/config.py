@@ -11,11 +11,11 @@ from pydantic import AnyHttpUrl, Field
 from pydantic_settings import BaseSettings
 
 # Default values as constants for better maintainability
-DEFAULT_SEARXNG_URL = "https://paulgo.io/"
+DEFAULT_SEARXNG_URL = AnyHttpUrl("https://paulgo.io/")
 DEFAULT_TIMEOUT = 10
 DEFAULT_RESULT_COUNT = 10
 DEFAULT_LANGUAGE = "all"
-DEFAULT_FORMAT = "text"
+DEFAULT_FORMAT = "text"  # type: Literal["text", "json"]
 DEFAULT_LOG_LEVEL = "ERROR"
 
 
@@ -36,7 +36,8 @@ class Settings(BaseSettings):
 
     # SearxNG instance URL
     searxng_url: AnyHttpUrl = Field(
-        default=DEFAULT_SEARXNG_URL, description="URL of the SearxNG instance to use"
+        default=DEFAULT_SEARXNG_URL,
+        description="URL of the SearxNG instance to use",
     )
 
     # HTTP request settings
@@ -69,7 +70,8 @@ class Settings(BaseSettings):
     # Logging settings
     log_level: str = Field(
         default=DEFAULT_LOG_LEVEL,
-        description="Logging level for the application (e.g., 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')",
+        description="Logging level for the application "
+        "(e.g., 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')",
     )
 
     class Config:
